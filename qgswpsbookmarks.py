@@ -60,7 +60,6 @@ class Bookmarks(QDialog, QObject,  Ui_Bookmarks):
 
     @pyqtSignature("")
     def on_btnConnect_clicked(self):
-#        self.emit(SIGNAL("getBookmarkDescription(QString, QTreeWidgetItem)"), self.myItem.text(0),  self.myItem)
         self.close()
 
     

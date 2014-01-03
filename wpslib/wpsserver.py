@@ -26,6 +26,8 @@ from qgis.core import QgsNetworkAccessManager
 
 class WpsServer(QObject):
 
+    capabilitiesRequestFinished = pyqtSignal()
+
     def __init__(self, connectionName, server, baseUrl, version):
         QObject.__init__(self)
         self.connectionName = connectionName
@@ -43,13 +45,13 @@ class WpsServer(QObject):
         for connectionName in connections:
             settings = QSettings()
             entry = "/WPS/"+connectionName
-            scheme = settings.value(entry+"/scheme").toString()
-            server = settings.value(entry+"/server").toString()
+            scheme = settings.value(entry+"/scheme")
+            server = settings.value(entry+"/server")
             port =  settings.value(entry+"/port")
-            path = settings.value(entry+"/path").toString()
-            #method = settings.value(entry+"/method").toString()
-            version = settings.value(entry+"/version").toString()
-            url = settings.value(entry+"/url").toString()
+            path = settings.value(entry+"/path")
+            #method = settings.value(entry+"/method")
+            version = settings.value(entry+"/version")
+            url = settings.value(entry+"/url")
 
             baseUrl = scheme+"://"+server+path
             server = WpsServer(connectionName, server, baseUrl, version)
@@ -63,13 +65,13 @@ class WpsServer(QObject):
     def getServer(connectionName):
         settings = QSettings()
         mySettings = "/WPS/"+connectionName
-        scheme = settings.value(mySettings+"/scheme").toString()
-        server = settings.value(mySettings+"/server").toString()
+        scheme = settings.value(mySettings+"/scheme")
+        server = settings.value(mySettings+"/server")
         port =  settings.value(mySettings+"/port")
-        path = settings.value(mySettings+"/path").toString()
-        #method = settings.value(mySettings+"/method").toString()
-        version = settings.value(mySettings+"/version").toString()
-        url = settings.value(mySettings+"/url").toString()
+        path = settings.value(mySettings+"/path")
+        #method = settings.value(mySettings+"/method")
+        version = settings.value(mySettings+"/version")
+        url = settings.value(mySettings+"/url")
   
         if url == '':
             baseUrl = scheme+"://"+server+path
@@ -87,7 +89,7 @@ class WpsServer(QObject):
         self.doc = None
         url = QUrl()
         
-        if self.baseUrl.contains('?'):
+        if '?' in self.baseUrl:
             myRequest = "&Request=GetCapabilities&identifier=&Service=WPS&Version=" + self.version
         else:    
             myRequest = "?Request=GetCapabilities&identifier=&Service=WPS&Version=" + self.version
@@ -113,7 +115,7 @@ class WpsServer(QObject):
         if version != "1.0.0":
             QMessageBox.information(None, QApplication.translate("QgsWps","Only WPS Version 1.0.0 is supported"), xmlString)
             pass
-        self.emit(SIGNAL("capabilitiesRequestFinished"))
+        self.capabilitiesRequestFinished.emit()
 
     def parseCapabilitiesXML(self):
         from wps.wpslib.processdescription import ProcessDescription
@@ -129,7 +131,7 @@ class WpsServer(QObject):
           v_element = version.at(i).toElement()
           i_element = identifier.at(i).toElement()
           t_element = title.at(i+1).toElement()
-          a_element = abstract.at(i+1).toElement()                       
+          a_element = abstract.at(i+1).toElement()          
     
           itemList = []
           itemList.append(i_element.text()) 

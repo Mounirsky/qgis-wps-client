@@ -136,7 +136,7 @@ class ExecutionResult(QObject):
         if resultNodeList.size() > 0:
             for i in range(resultNodeList.size()):
               f_element = resultNodeList.at(i).toElement()
-              identifier = f_element.elementsByTagNameNS("http://www.opengis.net/ows/1.1","Identifier").at(0).toElement().text().simplified()
+              identifier = f_element.elementsByTagNameNS("http://www.opengis.net/ows/1.1","Identifier").at(0).toElement().text().strip()#.simplified()
 
               # Fetch the referenced complex data
               if f_element.elementsByTagNameNS("http://www.opengis.net/wps/1.0.0", "Reference").size() > 0:
@@ -154,11 +154,11 @@ class ExecutionResult(QObject):
                   return False
 
                 # Get the mime type of the result
-                self.mimeType = str(reference.attribute("mimeType", "0").toLower())
+                self.mimeType = str(reference.attribute("mimeType", "0").lower())
 
                 # Get the encoding of the result, it can be used decoding base64
-                encoding = str(reference.attribute("encoding", "").toLower())
-                schema = str(reference.attribute("schema", "").toLower())                
+                encoding = str(reference.attribute("encoding", "").lower())
+                schema = str(reference.attribute("schema", "").lower())                
                 
                 if fileLink != '0':
                   if "playlist" in self.mimeType: # Streaming based process?
@@ -170,11 +170,11 @@ class ExecutionResult(QObject):
                 complexData = f_element.elementsByTagNameNS("http://www.opengis.net/wps/1.0.0","ComplexData").at(0).toElement()
 
                 # Get the mime type of the result
-                self.mimeType = str(complexData.attribute("mimeType", "0").toLower())
+                self.mimeType = str(complexData.attribute("mimeType", "0").lower())
 
                 # Get the encoding of the result, it can be used decoding base64
-                encoding = str(complexData.attribute("encoding", "").toLower())
-                schema = str(reference.attribute("schema", "").toLower())                
+                encoding = str(complexData.attribute("encoding", "").lower())
+                schema = str(reference.attribute("schema", "").lower())                
 
 
                 if "playlist" in self.mimeType:
@@ -196,7 +196,7 @@ class ExecutionResult(QObject):
             if status.size() == 0:
                 return self.errorHandler(resultXML)
             else:
-                statusXML = QString()
+                statusXML = ""
                 textStream = QTextStream(statusXML)
                 status.at(0).save(textStream, 2)
                 return self.errorHandler(statusXML)
@@ -217,8 +217,8 @@ class ExecutionResult(QObject):
 
     def getResultFile(self, identifier, mimeType, encoding, schema,  reply):
         # Check if there is redirection
-        reDir = reply.attribute(QNetworkRequest.RedirectionTargetAttribute).toUrl()
-        if not reDir.isEmpty():
+        reDir = reply.attribute(QNetworkRequest.RedirectionTargetAttribute)#.toUrl()
+        if reDir is not None:
             self.fetchResult(encoding, schema,  reDir, identifier)
             return
         self._resultFileCallback(identifier, mimeType, encoding, schema,  reply)

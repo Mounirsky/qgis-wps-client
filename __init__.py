@@ -23,13 +23,13 @@ def description():
   return "Client for Web Processing Services"
 
 def version():
-  return "1.0.3"
+  return "2.0"
 
 def qgisMinimumVersion():
-  return "1.5"  
+  return "2.0"  
   
 def qgisMaximumVersion():
-  return "1.9"    
+  return "2.1"    
 
 def date():
     return '2013-10-04'

@@ -1,5 +1,5 @@
-from sextante.gui.ToolboxAction import ToolboxAction
-from sextante.core.Sextante import Sextante
+from processing.gui.ToolboxAction import ToolboxAction
+from processing.core.Processing import Processing
 from WpsAlgorithm import WpsAlgorithm
 from wps.wpslib.processdescription import ProcessDescription
 import os
@@ -23,4 +23,4 @@ class WpsServerAction(ToolboxAction):
         self.server.parseCapabilitiesXML()
         for process in self.server.processes:
             self.processalgs.append( WpsAlgorithm(process) )
-        Sextante.updateAlgsList()
+        processing.updateAlgsList()

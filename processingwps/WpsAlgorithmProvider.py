@@ -1,6 +1,6 @@
-from sextante.core.AlgorithmProvider import AlgorithmProvider
-from sextante.core.SextanteConfig import Setting, SextanteConfig
-from sextante.core.SextanteUtils import mkdir, SextanteUtils
+from Processing.core.AlgorithmProvider import AlgorithmProvider
+from processing.core.ProcessingConfig import Setting, ProcessingConfig
+from processing.core.ProcessingUtils import mkdir, ProcessingUtils
 from WpsAlgorithm import WpsAlgorithm
 from AddNewWpsAction import AddNewWpsAction
 from WpsServerAction import WpsServerAction
@@ -19,22 +19,22 @@ class WpsAlgorithmProvider(AlgorithmProvider):
 
     def initializeSettings(self):
         AlgorithmProvider.initializeSettings(self)
-        SextanteConfig.addSetting(Setting(self.getDescription(),
+        ProcessingConfig.addSetting(Setting(self.getDescription(),
                                           WpsAlgorithmProvider.WPS_DESCRIPTIONS,
                                           "WPS description cache folder",
                                           WpsAlgorithmProvider.WpsDescriptionFolder()))
 
     @staticmethod
     def WpsDescriptionFolder():
-        folder = SextanteConfig.getSetting(WpsAlgorithmProvider.WPS_DESCRIPTIONS)
+        folder = ProcessingConfig.getSetting(WpsAlgorithmProvider.WPS_DESCRIPTIONS)
         if folder == None:
-            folder = unicode(os.path.join(SextanteUtils.userFolder(), "wps"))
+            folder = unicode(os.path.join(ProcessingUtils.userFolder(), "wps"))
         mkdir(folder)
         return os.path.abspath(folder)
 
     def unload(self):
         AlgorithmProvider.unload(self)
-        SextanteConfig.removeSetting( WpsAlgorithmProvider.WPS_DESCRIPTIONS)
+        ProcessingConfig.removeSetting( WpsAlgorithmProvider.WPS_DESCRIPTIONS)
 
     def getName(self):
         return "wps"

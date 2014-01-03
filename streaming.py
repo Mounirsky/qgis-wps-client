@@ -18,8 +18,8 @@ email                : geotux_tuxman@linuxmail.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import (QTimer, QUrl, QFile, QIODevice, QVariant, pyqtSignal, 
-                          QObject, QProcess, QStringList, QRegExp, QString, 
+from PyQt4.QtCore import (QTimer, QUrl, QFile, QIODevice, pyqtSignal, 
+                          QObject, QProcess, QRegExp, 
                           QSettings, SIGNAL, QTextStream)
 from PyQt4.QtGui import QColor, QMessageBox
 from PyQt4.QtNetwork import QNetworkRequest, QNetworkAccessManager
@@ -42,8 +42,8 @@ class Streaming(QObject):
     
     # Define SIGNALS/SLOTS
     playlistHandled = pyqtSignal(dict)
-    urlReady = pyqtSignal('QString', int, 'QString')
-    dataReady = pyqtSignal('QString', int)
+    urlReady = pyqtSignal(str, int, str)
+    dataReady = pyqtSignal(str, int)
     
     def __init__(self, parent, iface, chunks, playlistUrl, mimeType, encoding):
         super(Streaming, self).__init__()
@@ -223,8 +223,8 @@ class Streaming(QObject):
         """ Send the GET request """           
         url = QUrl(fileLink)
         theReply2 = self.QNAM4Chunks.get(QNetworkRequest(url))
-        theReply2.setProperty("chunkId", QVariant(chunkId))
-        theReply2.setProperty("encoding", QVariant(encoding))
+        theReply2.setProperty("chunkId", chunkId )
+        theReply2.setProperty("encoding", encoding )
                   
     
     def handleErrors(self, error): # TODO connect it
@@ -372,7 +372,7 @@ class Streaming(QObject):
                     self.loadVirtualRaster)
                 #self.setProcessEnvironment(self.process) Required in Windows?
                 cmd = "gdalbuildvrt"
-                arguments = QStringList()
+                arguments = []
                 if platform.system() == "Windows" and cmd[-3:] == ".py":
                     command = cmd[:-3] + ".bat"
                 else:
@@ -493,7 +493,7 @@ class Streaming(QObject):
             envval = os.getenv(name)
             if envval == None or envval == "":
                 envval = str(val)
-            elif not QString( envval ).split( sep ).contains( val, Qt.CaseInsensitive ):
+            elif val.lower() not in [ x.lower() for x in envval.split( sep ) ]:
                 envval += "%s%s" % (sep, str(val))
             else:
                 envval = None
@@ -510,7 +510,7 @@ class Streaming(QObject):
                 process.setEnvironment( env )
 
     def getRasterFiles(self, dir, extension):
-        rasters = QStringList()
+        rasters = []
         for name in glob.glob(dir + '/*' +  extension):
             rasters.append(name)
         return rasters      
@@ -519,11 +519,11 @@ class Streaming(QObject):
     def getGdalBinPath(self):
         """ Retrieves GDAL binaries location """
         settings = QSettings()
-        return settings.value( "/GdalTools/gdalPath", QVariant( "" ) ).toString()
+        return settings.value( "/GdalTools/gdalPath", "" )
 
    
     def getGdalPymodPath(self):
         """ Retrieves GDAL python modules location """
         settings = QSettings()
-        return settings.value( "/GdalTools/gdalPymodPath", QVariant( "" ) ).toString()
+        return settings.value( "/GdalTools/gdalPymodPath", "" )
    

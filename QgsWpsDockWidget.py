@@ -78,13 +78,13 @@ class QgsWpsDockWidget(QDockWidget, Ui_QgsWpsDockWidget):
 
         flags = Qt.WindowTitleHint | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint  # QgisGui.ModalDialogFlags
         self.dlg = QgsWpsGui(self.iface.mainWindow(), flags)
-        QObject.connect(self.dlg, SIGNAL("getDescription(QString, QTreeWidgetItem)"), self.getDescription)    
-        QObject.connect(self.dlg, SIGNAL("newServer()"), self.newServer)    
-        QObject.connect(self.dlg, SIGNAL("editServer(QString)"), self.editServer)    
-        QObject.connect(self.dlg, SIGNAL("deleteServer(QString)"), self.deleteServer)        
-        QObject.connect(self.dlg, SIGNAL("connectServer(QString)"), self.cleanGui)    
-        QObject.connect(self.dlg, SIGNAL("pushDefaultServer()"), self.pushDefaultServer) 
-        QObject.connect(self.dlg, SIGNAL("requestDescribeProcess(QString, QString)"), self.requestDescribeProcess)
+        self.dlg.getDescription.connect( self.getDescription )
+        self.dlg.newServer.connect( self.newServer )
+        self.dlg.editServer.connect( self.editServer )
+        self.dlg.deleteServer.connect( self.deleteServer )
+        self.dlg.connectServer.connect( self.cleanGui )
+        self.dlg.addDefaultServer.connect( self.addDefaultServer )
+        self.dlg.requestDescribeProcess.connect( self.requestDescribeProcess )
         QObject.connect(self.dlg, SIGNAL("bookmarksChanged()"), self, SIGNAL("bookmarksChanged()"))    
 
         self.killed.connect(self.stopStreaming)
@@ -151,10 +151,10 @@ class QgsWpsDockWidget(QDockWidget, Ui_QgsWpsDockWidget):
             text = QApplication.translate("QgsWps", " terminated with errors!")
             
         try:
-          self.lblProcess.setText(QString(self.processIdentifier+text))          
+          self.lblProcess.setText( self.processIdentifier+text )
         except:
           self.lblProcess = QLabel(groupBox)        
-          self.lblProcess.setText(QString(self.processIdentifier+text))
+          self.lblProcess.setText( self.processIdentifier+text )
           layout.addWidget(self.lblProcess)        
           self.groupBox.setLayout(layout)
 
@@ -347,7 +347,7 @@ class QgsWpsDockWidget(QDockWidget, Ui_QgsWpsDockWidget):
 
       myLabel = QLabel(groupbox)
       myLabel.setObjectName("qLabel"+name)
-      myLabel.setText(QString(title))
+      myLabel.setText( title )
       myLabel.setMinimumWidth(600)
       myLabel.setMinimumHeight(25)
       myLabel.setWordWrap(True)
@@ -402,7 +402,7 @@ class QgsWpsDockWidget(QDockWidget, Ui_QgsWpsDockWidget):
             # Single raster and vector inputs ##########################################
             for comboBox in self.complexInputComboBoxList:
               # Do not add undefined inputs
-              if comboBox == None or unicode(comboBox.currentText(), 'latin1') == "<None>":
+              if comboBox == None or comboBox.currentText() == "<None>":
                 continue
                    
               # TODO: Check for more types (e.g. KML, Shapefile, JSON)
@@ -485,7 +485,7 @@ class QgsWpsDockWidget(QDockWidget, Ui_QgsWpsDockWidget):
           # Attach ALL literal outputs #############################################
           for i in range(dataOutputs.size()):
             f_element = dataOutputs.at(i).toElement()
-            outputIdentifier = f_element.elementsByTagName("ows:Identifier").at(0).toElement().text().simplified()
+            outputIdentifier = f_element.elementsByTagName("ows:Identifier").at(0).toElement().text().strip()#.simplified()
             literalOutputType = f_element.elementsByTagName("LiteralOutput")
     
             # Complex data is always requested as reference
@@ -535,7 +535,7 @@ class QgsWpsDockWidget(QDockWidget, Ui_QgsWpsDockWidget):
         layout = QHBoxLayout()
     
         btnOk = QPushButton(groupBox)
-        btnOk.setText(QString(QApplication.translate("QgsWps", "Run")))
+        btnOk.setText( QApplication.translate("QgsWps", "Run") )
         btnOk.setMinimumWidth(100)
         btnOk.setMaximumWidth(100)
     
@@ -672,7 +672,7 @@ class QgsWpsDockWidget(QDockWidget, Ui_QgsWpsDockWidget):
         myQTempFile = QTemporaryFile()
         myQTempFile.open()
         ext = getFileExtension(self.mimeType)
-        tmpFile = unicode(myQTempFile.fileName() + ext,'latin1')
+        tmpFile = myQTempFile.fileName() + ext
         myQTempFile.close()
         
         # Write the data to the temporary file 
@@ -728,18 +728,18 @@ class QgsWpsDockWidget(QDockWidget, Ui_QgsWpsDockWidget):
         dlgNew.show()
         self.dlg.initQgsWpsGui()
 
-    def pushDefaultServer(self):
+    def addDefaultServer(self):
         settings = QSettings()
         for k,v in self.defaultServers.iteritems():
             myURL = urlparse(str(v))
             mySettings = "/WPS/" + k
-#    settings.setValue("WPS/connections/selected", QVariant(name) )
-            settings.setValue(mySettings+"/scheme",  QVariant(myURL.scheme))
-            settings.setValue(mySettings+"/server",  QVariant(myURL.netloc))
-            settings.setValue(mySettings+"/path", QVariant(myURL.path))
-            settings.setValue(mySettings+"/method",QVariant("GET"))
-            settings.setValue(mySettings+"/version",QVariant("1.0.0"))
-            settings.setValue(mySettings+"/url",QVariant(v))
+#    settings.setValue("WPS/connections/selected", name )
+            settings.setValue(mySettings+"/scheme", myURL.scheme )
+            settings.setValue(mySettings+"/server", myURL.netloc )
+            settings.setValue(mySettings+"/path", myURL.path )
+            settings.setValue(mySettings+"/method", "GET" )
+            settings.setValue(mySettings+"/version", "1.0.0" )
+            settings.setValue(mySettings+"/url", v )
             self.dlg.initQgsWpsGui()
     
     

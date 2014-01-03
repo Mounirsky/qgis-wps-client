@@ -24,11 +24,11 @@ from QgsWpsDockWidget import QgsWpsDockWidget
 from wps import version
 from doAbout import DlgAbout
 
-SEXTANTE_SUPPORT = False
+PROCESSING_SUPPORT = False
 try:
-    from sextante.core.Sextante import Sextante
-    from wps.sextantewps.WpsAlgorithmProvider import WpsAlgorithmProvider
-    SEXTANTE_SUPPORT = True
+    from processing.core.Processing import Processing
+    from wps.processingwps.WpsAlgorithmProvider import WpsAlgorithmProvider
+    PROCESSING_SUPPORT = True
 except ImportError:
     pass
 
@@ -50,7 +50,7 @@ class QgsWps:
     #Initialise the translation environment    
     userPluginPath = QFileInfo(QgsApplication.qgisUserDbFilePath()).path()+"/python/plugins/wps"  
     systemPluginPath = QgsApplication.prefixPath()+"/share/qgis/python/plugins/wps"
-    myLocaleName = QSettings().value("locale/userLocale").toString()
+    myLocaleName = QSettings().value("locale/userLocale")
     myLocale = myLocaleName[0:2]
     if QFileInfo(userPluginPath).exists():
       self.pluginPath = userPluginPath
@@ -94,16 +94,16 @@ class QgsWps:
      self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.myDockWidget)
      self.myDockWidget.show()
 
-     if SEXTANTE_SUPPORT:
+     if PROCESSING_SUPPORT:
          self.provider = WpsAlgorithmProvider(self.myDockWidget)
      else:
          self.provider = None
 
      if self.provider:
         try:
-            Sextante.addProvider(self.provider, True) #Force tree update
+            Processing.addProvider(self.provider, True) #Force tree update
         except TypeError:
-            Sextante.addProvider(self.provider)
+            Processing.addProvider(self.provider)
 
 
 
@@ -125,7 +125,7 @@ class QgsWps:
      self.myDockWidget = None
 
      if self.provider:
-        Sextante.removeProvider(self.provider)
+        Processing.removeProvider(self.provider)
 
 ##############################################################################
 

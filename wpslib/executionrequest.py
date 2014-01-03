@@ -137,7 +137,7 @@ def createTmpGML(vLayer, processSelection="False", supportedGML="GML2"):
 
     myQTempFile = QTemporaryFile()
     myQTempFile.open()
-    tmpFile = unicode(myQTempFile.fileName()+".gml",'latin1')
+    tmpFile = myQTempFile.fileName()+".gml"
     myQTempFile.close()
 
     if vLayer.dataProvider().name() == "postgres":
@@ -151,10 +151,10 @@ def createTmpGML(vLayer, processSelection="False", supportedGML="GML2"):
 
     # FORMAT=GML3 only works with OGR >= 1.8.0, otherwise GML2 is always returned
     if supportedGML == "GML3":
-      dso = QStringList("FORMAT=GML3")
+      dso = ["FORMAT=GML3"]
     else: # "GML" or "GML2"
-      dso = QStringList()
-    lco = QStringList()
+      dso = []
+    lco = []
     error = QgsVectorFileWriter.writeAsVectorFormat(vLayer, tmpFile, encoding, vLayer.dataProvider().crs(), "GML",  processSelected,  "",  dso,  lco)
     if error != QgsVectorFileWriter.NoError:
         QMessageBox.information(None, 'Error',  'Process stopped with errors')
@@ -175,7 +175,7 @@ def createTmpGML(vLayer, processSelection="False", supportedGML="GML2"):
         myFileInfo = myFilePath+'/'+QFileInfo(myFile).completeBaseName()
         QFile(myFileInfo+'.xsd').remove()
         QFile(myFileInfo+'.gml').remove()
-    return gmlString.simplified()
+    return gmlString.strip()#.simplified()
 
 def getDBEncoding(layerProvider):
     dbConnection = QgsDataSourceURI(layerProvider.dataSourceUri())
@@ -317,7 +317,7 @@ class ExecutionRequest(QObject):
 
     def addLiteralDataInput(self, identifier, text):
         self.addExecuteRequestInputStart(identifier)
-        self.request += "<wps:LiteralData>"+unicode(text)+"</wps:LiteralData>\n"
+        self.request += "<wps:LiteralData>"+text+"</wps:LiteralData>\n"
         self.addExecuteRequestInputEnd()
 
     def addBoundingBoxInput(self, identifier, bboxArray):

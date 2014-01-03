@@ -137,9 +137,9 @@ def getOwsElement(element, name):
     return element.elementsByTagNameNS("http://www.opengis.net/ows/1.1", name)
 
 def getIdentifierTitleAbstractFromElement(element):
-    identifier = getOwsElement(element, "Identifier").at(0).toElement().text().simplified()
-    title = getOwsElement(element, "Title").at(0).toElement().text().simplified()
-    abstract = getOwsElement(element, "Abstract").at(0).toElement().text().simplified()
+    identifier = getOwsElement(element, "Identifier").at(0).toElement().text().strip()#.simplified()
+    title = getOwsElement(element, "Title").at(0).toElement().text().strip()#.simplified()
+    abstract = getOwsElement(element, "Abstract").at(0).toElement().text().strip()#.simplified()
     return identifier, title, abstract
 
 def getDefaultMimeType(inElement):
@@ -160,9 +160,9 @@ def getMimeTypeSchemaEncoding(element):
     schema = ""
     encoding = ""
     try:
-        mimeType = str(element.elementsByTagName("MimeType").at(0).toElement().text().simplified().toLower())
-        schema = str(element.elementsByTagName("Schema").at(0).toElement().text().simplified().toLower())
-        encoding = str(element.elementsByTagName("Encoding").at(0).toElement().text().simplified().toLower())
+        mimeType = str(element.elementsByTagName("MimeType").at(0).toElement().text().strip().lower())#.simplified().toLower())
+        schema = str(element.elementsByTagName("Schema").at(0).toElement().text().strip().lower())#.simplified().toLower())
+        encoding = str(element.elementsByTagName("Encoding").at(0).toElement().text().strip().lower())#.simplified().toLower())
     except:
         pass
 
@@ -262,8 +262,7 @@ def allowedValues(aValues):
 
        try:
           for n in range(int(min_val), int(max_val) + 1):
-              myVal = QString()
-              myVal.append(str(n))
+              myVal = str(n)
               valList.append(myVal)
        except:
            QMessageBox.critical(None, QApplication.translate("QgsWps", "Error"), QApplication.translate("QgsWps", "Maximum allowed Value is too large"))
@@ -273,7 +272,7 @@ def allowedValues(aValues):
      if v_element.size() > 0:
        for n in range(v_element.size()):
          mv_element = v_element.at(n).toElement()
-         valList.append(unicode(mv_element.text(), 'latin1').strip())
+         valList.append(mv_element.text().strip())
 
      return valList
 
@@ -319,15 +318,15 @@ class ProcessDescription(QObject):
             settings = QSettings()
             mySettings = "/WPS-Bookmarks/"+myBookmark
             #old redundant server properties:
-            #scheme = settings.value(mySettings+"/scheme").toString()
-            #server = settings.value(mySettings+"/server").toString()
-            #path = settings.value(mySettings+"/path").toString()
-            #port = settings.value(mySettings+"/port").toString()
-            #version = settings.value(mySettings+"/version").toString()
+            #scheme = settings.value(mySettings+"/scheme")
+            #server = settings.value(mySettings+"/server")
+            #path = settings.value(mySettings+"/path")
+            #port = settings.value(mySettings+"/port")
+            #version = settings.value(mySettings+"/version")
 
             myBookmarkArray = myBookmark.split("@@")
             connectionName = myBookmarkArray[0]
-            identifier = settings.value(mySettings+"/identifier").toString()
+            identifier = settings.value(mySettings+"/identifier")
 
             server = WpsServer.getServer(connectionName)
             process = ProcessDescription(server, identifier)
@@ -357,7 +356,7 @@ class ProcessDescription(QObject):
 
     def requestUrl(self):
         url = QUrl()
-        if self.server.baseUrl.contains('?'):
+        if '?' in self.server.baseUrl:
             request = "&Request=DescribeProcess&identifier=" + self.identifier + "&Service=WPS&Version=" + self.version
         else:
             request = "?Request=DescribeProcess&identifier=" + self.identifier + "&Service=WPS&Version=" + self.version
@@ -401,8 +400,8 @@ class ProcessDescription(QObject):
         self.doc.setContent(self.processXML, True)
 
         processDescription = self.doc.elementsByTagName("ProcessDescription")
-        self.processIdentifier = processDescription.at(0).toElement().elementsByTagNameNS("http://www.opengis.net/ows/1.1","Identifier").at(0).toElement().text().simplified()
-        self.processName = processDescription.at(0).toElement().elementsByTagNameNS("http://www.opengis.net/ows/1.1","Title").at(0).toElement().text().simplified()  
+        self.processIdentifier = processDescription.at(0).toElement().elementsByTagNameNS("http://www.opengis.net/ows/1.1","Identifier").at(0).toElement().text().strip()#.simplified()
+        self.processName = processDescription.at(0).toElement().elementsByTagNameNS("http://www.opengis.net/ows/1.1","Title").at(0).toElement().text().strip()#.simplified()  
 
         self.identifier, self.title, self.abstract = getIdentifierTitleAbstractFromElement(self.doc)
         self.inputs = []

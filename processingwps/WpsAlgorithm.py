@@ -1,23 +1,23 @@
-from sextante.core.GeoAlgorithm import GeoAlgorithm
-from sextante.core.Sextante import Sextante
-from sextante.core.QGisLayers import QGisLayers
-from sextante.core.SextanteLog import SextanteLog
-from sextante.core.GeoAlgorithmExecutionException import GeoAlgorithmExecutionException
-from sextante.parameters.ParameterBoolean import ParameterBoolean
-from sextante.parameters.ParameterCrs import ParameterCrs
-from sextante.parameters.ParameterExtent import ParameterExtent
-from sextante.parameters.ParameterMultipleInput import ParameterMultipleInput
-from sextante.parameters.ParameterNumber import ParameterNumber
-from sextante.parameters.ParameterRaster import ParameterRaster
-from sextante.parameters.ParameterSelection import ParameterSelection
-from sextante.parameters.ParameterString import ParameterString
-from sextante.parameters.ParameterTable import ParameterTable
-from sextante.parameters.ParameterVector import ParameterVector
-from sextante.parameters.ParameterFile import ParameterFile
-from sextante.outputs.OutputRaster import OutputRaster
-from sextante.outputs.OutputVector import OutputVector
-from sextante.outputs.OutputString import OutputString
-from sextante.outputs.OutputFactory import OutputFactory
+from processing.core.GeoAlgorithm import GeoAlgorithm
+from processing.core.Processing import Processing
+from processing.core.ProcessingLog import ProcessingLog
+from processing.core.GeoAlgorithmExecutionException import GeoAlgorithmExecutionException
+from processing.parameters.ParameterBoolean import ParameterBoolean
+from processing.parameters.ParameterCrs import ParameterCrs
+from processing.parameters.ParameterExtent import ParameterExtent
+from processing.parameters.ParameterMultipleInput import ParameterMultipleInput
+from processing.parameters.ParameterNumber import ParameterNumber
+from processing.parameters.ParameterRaster import ParameterRaster
+from processing.parameters.ParameterSelection import ParameterSelection
+from processing.parameters.ParameterString import ParameterString
+from processing.parameters.ParameterTable import ParameterTable
+from processing.parameters.ParameterVector import ParameterVector
+from processing.parameters.ParameterFile import ParameterFile
+from processing.outputs.OutputRaster import OutputRaster
+from processing.outputs.OutputVector import OutputVector
+from processing.outputs.OutputString import OutputString
+from processing.outputs.OutputFactory import OutputFactory
+from processing.tools import dataobjects
 from wps.wpslib.wpsserver import WpsServer
 from wps.wpslib.processdescription import ProcessDescription
 from wps.wpslib.processdescription import getFileExtension,isMimeTypeVector,isMimeTypeRaster,isMimeTypeText,isMimeTypeFile
@@ -122,7 +122,7 @@ class WpsAlgorithm(GeoAlgorithm):
             inputType = type(input)
             value = self.getParameterValue(input.identifier)
             if inputType == VectorInput:
-                layer = QGisLayers.getObjectFromUri(value, False)
+                layer = dataobjects.getObjectFromUri(value, False)
                 if layer is None:
                     raise Exception("Couldn't extract layer for parameter '%s' from '%s'" % (input.identifier, value))
                 mimeType = input.dataFormat["MimeType"]
@@ -136,7 +136,7 @@ class WpsAlgorithm(GeoAlgorithm):
             elif inputType == TextInput:
                 request.addLiteralDataInput(input.identifier, str(value))
             elif inputType == RasterInput:
-                layer = QGisLayers.getObjectFromUri(value, False)
+                layer = dataobjects.getObjectFromUri(value, False)
                 mimeType = input.dataFormat["MimeType"]
                 request.addGeometryBase64Input(input.identifier, mimeType, layer)
             elif inputType == MultipleRasterInput:
@@ -186,7 +186,7 @@ class WpsAlgorithm(GeoAlgorithm):
 
     def getLiteralResult(self, identifier, literalText):
         self.setOutputValue(identifier, literalText)
-        SextanteLog.addToLog(SextanteLog.LOG_INFO, identifier + ": " + literalText)
+        ProcessingLog.addToLog(ProcessingLog.LOG_INFO, identifier + ": " + literalText)
 
     def getResultFile(self, identifier, mimeType, encoding, schema,  reply):
         # Get a unique temporary file name
@@ -235,5 +235,5 @@ class WpsAlgorithm(GeoAlgorithm):
 
     def errorResult(self, exceptionHtml):
         QMessageBox.critical(None, "Exception report", exceptionHtml)
-        #SextanteLog.addToLog(SextanteLog.LOG_ERROR, exceptionHtml)
+        #ProcessingLog.addToLog(ProcessingLog.LOG_ERROR, exceptionHtml)
         #raise GeoAlgorithmExecutionException("Exception report\n" + exceptionHtml)
