@@ -19,11 +19,12 @@
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from wps import version
+from __init__ import version
 from wpslib.wpsserver import WpsServer
 from wpslib.processdescription import ProcessDescription
 
 from Ui_qgswpsbookmarks import Ui_Bookmarks
+
 
 class Bookmarks(QDialog, QObject,  Ui_Bookmarks):
     """
@@ -35,23 +36,22 @@ class Bookmarks(QDialog, QObject,  Ui_Bookmarks):
         """
         QDialog.__init__(self, parent,  fl)
         self.setupUi(self)
-        self.setWindowTitle('QGIS WPS-Client '+version())
+        self.setWindowTitle('QGIS WPS-Client ' + version())
         self.initTreeWPSServices()
-        
+
     def initTreeWPSServices(self):
         self.treeWidget.clear()
         self.treeWidget.setColumnCount(self.treeWidget.columnCount())
         itemList = []
         for process in ProcessDescription.getBookmarks():
-           myItem = QTreeWidgetItem()
-           myItem.setText(0, process.server.connectionName)
-           myItem.setText(1,process.identifier)
-           myItem.setText(2,process.server.server)
-           itemList.append(myItem)
-           self.myItem = myItem #FIXME: backwards compatibility
+            myItem = QTreeWidgetItem()
+            myItem.setText(0, process.server.connectionName)
+            myItem.setText(1, process.identifier)
+            myItem.setText(2, process.server.server)
+            itemList.append(myItem)
+            self.myItem = myItem #FIXME: backwards compatibility
         self.btnOK.setEnabled(False)
-        self.treeWidget.addTopLevelItems(itemList)        
-
+        self.treeWidget.addTopLevelItems(itemList)
 
     @pyqtSignature("QTreeWidgetItem*, int")
     def on_treeWidget_itemDoubleClicked(self, item, column):
@@ -62,29 +62,28 @@ class Bookmarks(QDialog, QObject,  Ui_Bookmarks):
     def on_btnConnect_clicked(self):
         self.close()
 
-    
     @pyqtSignature("")
     def on_btnEdit_clicked(self):
-         pass
-    
+        pass
+
     @pyqtSignature("")
     def on_btnRemove_clicked(self):
         if self.treeWidget.currentItem():
             self.removeBookmark(self.treeWidget.currentItem())
-       
+
     @pyqtSignature("")
     def on_btnOK_clicked(self):
-        self.emit(SIGNAL("getBookmarkDescription(QTreeWidgetItem)"), self.myItem)
+        self.emit(SIGNAL("getBookmarkDescription(QTreeWidgetItem)"),
+                  self.myItem)
 
-    
     @pyqtSignature("")
     def on_btnClose_clicked(self):
-         self.close()
-         
+        self.close()
+
     def removeBookmark(self, item):
-        QMessageBox.information(None, '', item.text(0)+'@@'+item.text(1))
+        QMessageBox.information(None, '', item.text(0) + '@@' + item.text(1))
         server = WpsServer.getServer(item.text(0))
         process = ProcessDescription(server, item.text(1))
         process.removeBookmark()
         self.emit(SIGNAL("bookmarksChanged()"))
-        self.initTreeWPSServices()          
+        self.initTreeWPSServices()

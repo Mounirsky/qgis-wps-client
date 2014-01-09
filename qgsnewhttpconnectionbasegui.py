@@ -19,33 +19,34 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
-from wps import version
+from __init__ import version
 from Ui_qgsnewhttpconnectionbase import Ui_QgsNewHttpConnectionBase
 from qgswpsgui import QgsWpsGui
 from urlparse import urlparse
-import os, sys, string
 
-class QgsNewHttpConnectionBaseGui(QDialog,  QObject, Ui_QgsNewHttpConnectionBase):
-  MSG_BOX_TITLE = "WPS"
-  
-  def __init__(self, parent, fl):
-    QDialog.__init__(self, parent, fl)
-    self.parent = parent
-    self.flags = fl
-    self.setupUi(self)
-    self.setWindowTitle('QGIS WPS-Client '+version())
-    
-  @pyqtSignature("on_buttonBox_accepted()")       
-  def on_buttonBox_accepted(self):
-    settings = QSettings()
-    myURL = urlparse(str(self.txtUrl.text()))
-    mySettings = "/WPS/"+self.txtName.text()
+
+class QgsNewHttpConnectionBaseGui(QDialog,  QObject,
+                                  Ui_QgsNewHttpConnectionBase):
+    MSG_BOX_TITLE = "WPS"
+
+    def __init__(self, parent, fl):
+        QDialog.__init__(self, parent, fl)
+        self.parent = parent
+        self.flags = fl
+        self.setupUi(self)
+        self.setWindowTitle('QGIS WPS-Client ' + version())
+
+    @pyqtSignature("on_buttonBox_accepted()")
+    def on_buttonBox_accepted(self):
+        settings = QSettings()
+        myURL = urlparse(str(self.txtUrl.text()))
+        mySettings = "/WPS/" + self.txtName.text()
 #    settings.setValue("WPS/connections/selected", name )
-    settings.setValue(mySettings+"/scheme", myURL.scheme )
-    settings.setValue(mySettings+"/server", myURL.netloc )
-    settings.setValue(mySettings+"/path", myURL.path )
-    settings.setValue(mySettings+"/method", "GET" )
-    settings.setValue(mySettings+"/version", "1.0.0" )
-    settings.setValue(mySettings+"/url", self.txtUrl.text() )
-    
-    self.parent.initQgsWpsGui()    
+        settings.setValue(mySettings + "/scheme", myURL.scheme)
+        settings.setValue(mySettings + "/server", myURL.netloc)
+        settings.setValue(mySettings + "/path", myURL.path)
+        settings.setValue(mySettings + "/method", "GET")
+        settings.setValue(mySettings + "/version", "1.0.0")
+        settings.setValue(mySettings + "/url", self.txtUrl.text())
+
+        self.parent.initQgsWpsGui()

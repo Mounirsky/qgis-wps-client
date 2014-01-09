@@ -24,8 +24,9 @@ from PyQt4 import QtXml
 from PyQt4.QtXmlPatterns import QXmlQuery
 from qgis.core import QgsNetworkAccessManager
 from functools import partial
-from wps.wpslib.processdescription import getFileExtension
-import tempfile,  base64
+from processdescription import getFileExtension
+import tempfile
+import base64
 
 
 # Execute result example:
@@ -63,10 +64,12 @@ import tempfile,  base64
 
 def decodeBase64(infileName,  mimeType="", tmpDir=None):
     try:
-        tmpFile = tempfile.NamedTemporaryFile(prefix="base64", suffix=getFileExtension(mimeType), dir=tmpDir, delete=False) 
+        tmpFile = tempfile.NamedTemporaryFile(prefix="base64",
+                                              suffix=getFileExtension(mimeType),
+                                              dir=tmpDir, delete=False) 
         infile = open(infileName)
         outfile = open(tmpFile.name, 'w')
-        base64.decode(infile,outfile)
+        base64.decode(infile, outfile)
 
         infile.close()
         outfile.close()
@@ -75,12 +78,14 @@ def decodeBase64(infileName,  mimeType="", tmpDir=None):
 
     return tmpFile.name
 
+
 class ExecutionResult(QObject):
     """
     Send request XML and process result
     """
 
-    def __init__(self, literalResultCallback, resultFileCallback, errorResultCallback, streamingHandler):
+    def __init__(self, literalResultCallback, resultFileCallback,
+                 errorResultCallback, streamingHandler):
         QObject.__init__(self)
         self._getLiteralResult = literalResultCallback
         self._resultFileCallback = resultFileCallback
@@ -95,32 +100,33 @@ class ExecutionResult(QObject):
 
         postData = QByteArray()
         postData.append(requestXml)
-    
+
         scheme = processUrl.scheme()
         path = processUrl.path()
         server = processUrl.host()
         port = processUrl.port()
-        
+
         processUrl.removeQueryItem('Request')
         processUrl.removeQueryItem('identifier')
         processUrl.removeQueryItem('Version')
         processUrl.removeQueryItem('Service')
 
         qDebug("Post URL=" + str(processUrl))
-    
+
         thePostHttp = QgsNetworkAccessManager.instance()
         request = QNetworkRequest(processUrl)
-        request.setHeader( QNetworkRequest.ContentTypeHeader, "text/xml" )
+        request.setHeader(QNetworkRequest.ContentTypeHeader, "text/xml")
         self.thePostReply = thePostHttp.post(request, postData)
-        self.thePostReply.finished.connect(partial(self.resultHandler, self.thePostReply) )
+        self.thePostReply.finished.connect(partial(self.resultHandler,
+                                                   self.thePostReply))
 
     def finished(self):
         return self._processExecuted and (self.noFilesToFetch == 0)
 
     def resultHandler(self, reply):
-        """Handle the result of the WPS Execute request and add the outputs as new
-           map layers to the registry or open an information window to show literal
-           outputs."""
+        """Handle the result of the WPS Execute request and add the outputs as
+           new map layers to the registry or open an information window to
+           show literal outputs."""
         resultXML = reply.readAll().data()
         qDebug(resultXML)
         self.parseResult(resultXML)
@@ -129,7 +135,7 @@ class ExecutionResult(QObject):
 
     def parseResult(self, resultXML):
         self.doc = QtXml.QDomDocument()
-        self.doc.setContent(resultXML,  True)
+        self.doc.setContent(resultXML, True)
         resultNodeList = self.doc.elementsByTagNameNS("http://www.opengis.net/wps/1.0.0","Output")
 
         # TODO: Check if the process does not run correctly before

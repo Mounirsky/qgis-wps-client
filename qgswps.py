@@ -21,13 +21,14 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 from QgsWpsDockWidget import QgsWpsDockWidget
-from wps import version
+from __init__ import version
 from doAbout import DlgAbout
+import os
 
 PROCESSING_SUPPORT = False
 try:
     from processing.core.Processing import Processing
-    from wps.processingwps.WpsAlgorithmProvider import WpsAlgorithmProvider
+    from processingwps.WpsAlgorithmProvider import WpsAlgorithmProvider
     PROCESSING_SUPPORT = True
 except ImportError:
     pass
@@ -35,107 +36,105 @@ except ImportError:
 # initialize Qt resources from file resources.py
 import resources_rc
 
-
 DEBUG = False
+
 
 # Our main class for the plugin
 class QgsWps:
-  MSG_BOX_TITLE = "WPS Client"
-  
-  def __init__(self, iface):
-    # Save reference to the QGIS interface
-    self.iface = iface  
-    self.localePath = ""
-    
-    #Initialise the translation environment    
-    userPluginPath = QFileInfo(QgsApplication.qgisUserDbFilePath()).path()+"/python/plugins/wps"  
-    systemPluginPath = QgsApplication.prefixPath()+"/share/qgis/python/plugins/wps"
-    myLocaleName = QSettings().value("locale/userLocale")
-    myLocale = myLocaleName[0:2]
-    if QFileInfo(userPluginPath).exists():
-      self.pluginPath = userPluginPath
-      self.localePath = userPluginPath+"/i18n/wps_"+myLocale+".qm"
-    elif QFileInfo(systemPluginPath).exists():
-      self.pluginPath = systemPluginPath
-      self.localePath = systemPluginPath+"/i18n/wps_"+myLocale+".qm"
+    MSG_BOX_TITLE = "WPS Client"
 
-    if QFileInfo(self.localePath).exists():
-      self.translator = QTranslator()
-      self.translator.load(self.localePath)
-      
-      if qVersion() > '4.3.3':        
-        QCoreApplication.installTranslator(self.translator)  
+    def __init__(self, iface):
+        # Save reference to the QGIS interface
+        self.iface = iface
+        self.localePath = ""
 
-
-  ##############################################################################
-
-  def initGui(self):
- 
-    # Create action that will start plugin configuration
-     self.action = QAction(QIcon(":/plugins/wps/images/wps-add.png"), "WPS-Client", self.iface.mainWindow())
-     QObject.connect(self.action, SIGNAL("triggered()"), self.run)
-     
-     self.actionAbout = QAction("About", self.iface.mainWindow())
-     QObject.connect(self.actionAbout, SIGNAL("triggered()"), self.doAbout)
-         
-    # Add toolbar button and menu item
-     self.iface.addToolBarIcon(self.action)
-     
-     if hasattr(self.iface,  "addPluginToWebMenu"):
-         self.iface.addPluginToWebMenu("WPS-Client", self.action)
-         self.iface.addPluginToWebMenu("WPS-Client", self.actionAbout)
-     else:
-         self.iface.addPluginToMenu("WPS", self.action)
-         self.iface.addPluginToWebMenu("WPS", self.action)
-
-     
-     self.myDockWidget = QgsWpsDockWidget(self.iface)
-     self.myDockWidget.setWindowTitle('WPS')
-     self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.myDockWidget)
-     self.myDockWidget.show()
-
-     if PROCESSING_SUPPORT:
-         self.provider = WpsAlgorithmProvider(self.myDockWidget)
-     else:
-         self.provider = None
-
-     if self.provider:
-        try:
-            Processing.addProvider(self.provider, True) #Force tree update
-        except TypeError:
-            Processing.addProvider(self.provider)
-
-
-
-  ##############################################################################
-
-  def unload(self):
-     if hasattr(self.iface,  "addPluginToWebMenu"):
-         self.iface.removePluginWebMenu("WPS-Client", self.action)
-         self.iface.removePluginWebMenu("WPS-Client", self.actionAbout)
-     else:
-         self.iface.removePluginToMenu("WPS", self.action)      
-         self.iface.removePluginToMenu("WPS", self.actionAbout)
-         
-     self.iface.removeToolBarIcon(self.action)
-    
-     if self.myDockWidget:
-         self.myDockWidget.close()
+        #Initialise the translation environment
         
-     self.myDockWidget = None
+        # TODO with this solution probably we could look only for a path and
+        # not for userPluginPath and systemPluginPath, in this way it should
+        # recognize what is the right path
+        userPluginPath = os.path.dirname(os.path.realpath(__file__))  
+        systemPluginPath = QgsApplication.prefixPath() + "/share/qgis/python/plugins/wps"
+        myLocaleName = QSettings().value("locale/userLocale")
+        myLocale = myLocaleName[0:2]
+        print userPluginPath
+        if QFileInfo(userPluginPath).exists():
+            self.pluginPath = userPluginPath
+            self.localePath = userPluginPath + "/i18n/wps_" + myLocale + ".qm"
+        elif QFileInfo(systemPluginPath).exists():
+            self.pluginPath = systemPluginPath
+            self.localePath = systemPluginPath + "/i18n/wps_" + myLocale + ".qm"
 
-     if self.provider:
-        Processing.removeProvider(self.provider)
+        if QFileInfo(self.localePath).exists():
+            self.translator = QTranslator()
+            self.translator.load(self.localePath)
+
+        if qVersion() > '4.3.3':
+            QCoreApplication.installTranslator(self.translator)
+
+  ############################################################################
+    def initGui(self):
+ 
+        # Create action that will start plugin configuration
+        self.action = QAction(QIcon(":/plugins/wps/images/wps-add.png"),
+                              "WPS-Client", self.iface.mainWindow())
+        QObject.connect(self.action, SIGNAL("triggered()"), self.run)
+
+        self.actionAbout = QAction("About", self.iface.mainWindow())
+        QObject.connect(self.actionAbout, SIGNAL("triggered()"), self.doAbout)
+
+        # Add toolbar button and menu item
+        self.iface.addToolBarIcon(self.action)
+     
+        if hasattr(self.iface,  "addPluginToWebMenu"):
+            self.iface.addPluginToWebMenu("WPS-Client", self.action)
+            self.iface.addPluginToWebMenu("WPS-Client", self.actionAbout)
+        else:
+            self.iface.addPluginToMenu("WPS", self.action)
+            self.iface.addPluginToWebMenu("WPS", self.action)
+
+        self.myDockWidget = QgsWpsDockWidget(self.iface)
+        self.myDockWidget.setWindowTitle('WPS')
+        self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.myDockWidget)
+        self.myDockWidget.show()
+
+        if PROCESSING_SUPPORT:
+            self.provider = WpsAlgorithmProvider(self.myDockWidget)
+        else:
+            self.provider = None
+
+        if self.provider:
+            try:
+                Processing.addProvider(self.provider, True) #Force tree update
+            except TypeError:
+                Processing.addProvider(self.provider)
+
+  ############################################################################
+    def unload(self):
+        if hasattr(self.iface,  "addPluginToWebMenu"):
+            self.iface.removePluginWebMenu("WPS-Client", self.action)
+            self.iface.removePluginWebMenu("WPS-Client", self.actionAbout)
+        else:
+            self.iface.removePluginToMenu("WPS", self.action)
+            self.iface.removePluginToMenu("WPS", self.actionAbout)
+
+        self.iface.removeToolBarIcon(self.action)
+
+        if self.myDockWidget:
+            self.myDockWidget.close()
+
+        self.myDockWidget = None
+
+        if self.provider:
+            Processing.removeProvider(self.provider)
 
 ##############################################################################
+    def run(self):
+        if self.myDockWidget.isVisible():
+            self.myDockWidget.hide()
+        else:
+            self.myDockWidget.show()
 
-  def run(self):  
-    if self.myDockWidget.isVisible():
-        self.myDockWidget.hide()
-    else:
-        self.myDockWidget.show()
-        
-  def doAbout(self):
-      self.dlgAbout = DlgAbout()
-      self.dlgAbout.show()
-
+    def doAbout(self):
+        self.dlgAbout = DlgAbout()
+        self.dlgAbout.show()
